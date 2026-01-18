@@ -2,6 +2,9 @@
     <x-slot name="header">
         <h2>Clientes</h2>
     </x-slot>
+    <form method="GET">
+        <input name="search" placeholder="Buscar cliente">
+    </form>
 
     <a href="{{ route('clients.create') }}">Nuevo Cliente</a>
 
@@ -19,4 +22,6 @@
             </li>
         @endforeach
     </ul>
+    {{ $clients->links() }}
+
 </x-app-layout>

@@ -4,15 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreClientRequest;
+use App\Http\Requests\UpdateClientRequest;
 
 class ClientController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $clients = Client::all();
+        $clients = Client::when($request->search, function ($query) use ($request) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                ->orWhere('email', 'like', '%' . $request->search . '%');
+        })->paginate(10);
+
         return view('clients.index', compact('clients'));
     }
 
@@ -27,20 +33,11 @@ class ClientController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreClientRequest $request)
     {
-        $request->validate([
-        'name' => 'required',
-        'email' => 'required|email|unique:clients',
-        'phone' => 'nullable',
-    ]);
-
-    Client::create($request->all());
-
-    return redirect()->route('clients.index')
-        ->with('success', 'Cliente creado correctamente');
+        Client::create($request->validated());
+        return redirect()->route('clients.index')->with('success', 'Cliente creado');
     }
-
     /**
      * Display the specified resource.
      */
@@ -60,18 +57,10 @@ class ClientController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Client $client)
+    public function update(UpdateClientRequest $request, Client $client)
     {
-          $request->validate([
-        'name' => 'required',
-        'email' => 'required|email|unique:clients,email,' . $client->id,
-        'phone' => 'nullable',
-    ]);
-
-    $client->update($request->all());
-
-    return redirect()->route('clients.index')
-        ->with('success', 'Cliente actualizado');
+        $client->update($request->validated());
+        return redirect()->route('clients.index')->with('success', 'Cliente actualizado');
     }
 
     /**
@@ -79,9 +68,9 @@ class ClientController extends Controller
      */
     public function destroy(Client $client)
     {
-            $client->delete();
+        $client->delete();
 
-    return redirect()->route('clients.index')
-        ->with('success', 'Cliente eliminado');
+        return redirect()->route('clients.index')
+            ->with('success', 'Cliente eliminado');
     }
 }
