@@ -20,7 +20,13 @@ Route::middleware('auth')->group(function () {
 
 
 Route::middleware(['auth'])->group(function () {
-    Route::resource('clients', ClientController::class);
+
+    Route::resource('clients', ClientController::class)
+        ->except(['destroy']);
+
+    Route::delete('clients/{client}', [ClientController::class, 'destroy'])
+        ->middleware('admin')
+        ->name('clients.destroy');
 });
 
 require __DIR__.'/auth.php';
